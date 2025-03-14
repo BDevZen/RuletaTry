@@ -43,9 +43,28 @@ app.get('/deactivated-numbers', (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
 
+        if (!results || results.length === 0) {
+            // No participants found, return empty array
+            return res.status(200).json([]);
+        }
+
         // Extract all assigned numbers
-        const deactivatedNumbers = results.flatMap(participant => participant.boletos);
-        res.status(200).json(deactivatedNumbers);
+        try {
+            // Extract all assigned numbers, handling potential undefined boletos
+            const deactivatedNumbers = results.flatMap(participant => {
+                if (Array.isArray(participant.boletos)) {
+                    return participant.boletos;
+                } else {
+                    console.warn('Participant has no or invalid boletos:', participant);
+                    return []; // Skip invalid entries
+                }
+            });
+
+            res.status(200).json(deactivatedNumbers);
+        } catch (error) {
+            console.error('Error processing results:', error);
+            return res.status(500).json({ error: 'Error processing data', details: error.message });
+        }
     });
 });
 
