@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Fetch deactivated numbers from the backend
     async function fetchDeactivatedNumbers() {
         try {
-            const response = await fetch('http://localhost:3000/deactivated-numbers');
+            const response = await fetch('/deactivated-numbers');
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
