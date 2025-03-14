@@ -42,3 +42,6 @@ Thumbs.db # Archivos de sistema de Windows
 # Archivos de paquetes (opcional, dependiendo de tu flujo de trabajo)
 package-lock.json
 yarn.lock
+
+# Vercel deployment files
+.vercel/

@@ -5,27 +5,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const errorMessage = document.getElementById('error-message');
 
     let intentosRestantes = 0;
-    let spunNumbers = [];
-    let totalSum = 0;
+    let spunNumbers = []; // Track numbers spun on the roulette
+    let totalSum = 0; // Track the total sum of spun numbers
     let deactivatedNumbers = []; // Track deactivated numbers
+    let participantId; // Store the participant's ID
 
     // Fetch deactivated numbers from the backend
     async function fetchDeactivatedNumbers() {
         try {
             const response = await fetch('/deactivated-numbers');
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                throw new Error('Error fetching deactivated numbers');
             }
             deactivatedNumbers = await response.json();
             console.log('Deactivated numbers:', deactivatedNumbers);
             updateRouletteWheel(); // Update the roulette wheel
         } catch (error) {
-            console.error('Error fetching deactivated numbers:', error);
-            errorMessage.innerText = 'Error fetching deactivated numbers. Please try again later.';
+            console.error('Error:', error);
         }
     }
 
-    // Update the roulette wheel to reflect deactivated numbers
+    // Define updateRouletteWheel function
     function updateRouletteWheel() {
         const canvas = document.getElementById("canvas");
         if (canvas.getContext) {
@@ -34,53 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Redraw the roulette wheel with deactivated numbers
             drawRouletteWheel(options, deactivatedNumbers);
-        }
-    }
-
-    // Modify the drawRouletteWheel function to handle deactivated numbers
-    function drawRouletteWheel(options, deactivatedNumbers) {
-        const canvas = document.getElementById("canvas");
-        if (canvas.getContext) {
-            const outsideRadius = canvas.width / 2 - 20;
-            const textRadius = outsideRadius - 50;
-            const insideRadius = 50;
-
-            ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 2;
-            ctx.font = 'bold 12px Helvetica, Arial';
-
-            for (let i = 0; i < options.length; i++) {
-                const angle = startAngle + i * arc;
-                const isDeactivated = deactivatedNumbers.includes(options[i]);
-
-                // Use a different color for deactivated numbers
-                ctx.fillStyle = isDeactivated ? '#ccc' : getColor(i, options.length);
-
-                ctx.beginPath();
-                ctx.arc(canvas.width / 2, canvas.height / 2, outsideRadius, angle, angle + arc, false);
-                ctx.arc(canvas.width / 2, canvas.height / 2, insideRadius, angle + arc, angle, true);
-                ctx.stroke();
-                ctx.fill();
-
-                ctx.save();
-                ctx.shadowOffsetX = -1;
-                ctx.shadowOffsetY = -1;
-                ctx.shadowBlur = 0;
-                ctx.shadowColor = "rgb(220,220,220)";
-                ctx.fillStyle = isDeactivated ? '#888' : 'black';
-                ctx.translate(canvas.width / 2 + Math.cos(angle + arc / 2) * textRadius,
-                    canvas.height / 2 + Math.sin(angle + arc / 2) * textRadius);
-                ctx.rotate(angle + arc / 2 + Math.PI / 2);
-                const text = options[i];
-                ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
-                ctx.restore();
-            }
-
-            // Draw the arrow
-            drawArrow();
         }
     }
 
@@ -108,6 +61,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const data = await response.json();
                 console.log('Participant added:', data.participant);
+
+                // Store the participant's ID
+                participantId = data.participant.id;
 
                 // Update participant information
                 document.getElementById('nombreParticipante').innerText = `👤 Participante: ${nombre}`;
@@ -272,22 +228,47 @@ document.addEventListener('DOMContentLoaded', function () {
         spinTimeout = setTimeout(rotateWheel, 30);
     }
 
-    function stopRotateWheel() {
+    async function stopRotateWheel() {
         clearTimeout(spinTimeout);
-        var degrees = startAngle * 180 / Math.PI + 90;
-        var arcd = arc * 180 / Math.PI;
-        var index = Math.floor((360 - degrees % 360) / arcd);
-        var winner = options[index];
-
+        const degrees = (startAngle * 180) / Math.PI + 90;
+        const arcd = arc * 180 / Math.PI;
+        const index = Math.floor((360 - degrees % 360) / arcd);
+        const winner = options[index];
+    
         // Add the spun number to the list
         spunNumbers.push(winner);
         totalSum += winner;
-
+    
         // Update the UI
         document.getElementById('boletosObtenidos').innerText = `🎟️ Boletos: ${spunNumbers.join(', ')}`;
         document.getElementById('totalBoletos').innerText = `💰 Total: ${totalSum}`;
-        document.getElementById('mensaje').innerText = `¡Tu boleto es el ${winner}!`;
+        document.getElementById('mensaje').innerText = `¡Tu boleto es el número: ${winner}!`;
         document.getElementById('mensaje').setAttribute("aria-hidden", "false");
+    
+        // Send tickets and total to the backend
+        try {
+            const response = await fetch('/update-tickets', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: participantId, // Ensure you have the participant's ID
+                    tickets: spunNumbers.join(','), // Convert array to comma-separated string
+                    total: totalSum,
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error('Error updating tickets and total');
+            }
+    
+            const data = await response.json();
+            console.log('Tickets and total updated:', data);
+        } catch (error) {
+            console.error('Error:', error);
+            errorMessage.innerText = 'Error updating tickets and total. Please try again.';
+        }
     }
 
     function easeOut(t, b, c, d) {

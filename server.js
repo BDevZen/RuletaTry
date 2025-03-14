@@ -6,7 +6,7 @@ const path = require('path');
 const mysql = require('mysql2');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -34,7 +34,7 @@ connection.connect((err) => {
     console.log('Connected to MySQL database');
 });
 
-// Endpoint to get deactivated numbers (numbers already assigned)
+// Endpoint to get deactivated numbers
 app.get('/deactivated-numbers', (req, res) => {
     const query = 'SELECT boletos FROM participants';
     connection.query(query, (err, results) => {
@@ -43,28 +43,9 @@ app.get('/deactivated-numbers', (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
 
-        if (!results || results.length === 0) {
-            // No participants found, return empty array
-            return res.status(200).json([]);
-        }
-
-        // Extract all assigned numbers
-        try {
-            // Extract all assigned numbers, handling potential undefined boletos
-            const deactivatedNumbers = results.flatMap(participant => {
-                if (Array.isArray(participant.boletos)) {
-                    return participant.boletos;
-                } else {
-                    console.warn('Participant has no or invalid boletos:', participant);
-                    return []; // Skip invalid entries
-                }
-            });
-
-            res.status(200).json(deactivatedNumbers);
-        } catch (error) {
-            console.error('Error processing results:', error);
-            return res.status(500).json({ error: 'Error processing data', details: error.message });
-        }
+        console.log('Deactivated numbers:', results);
+        const deactivatedNumbers = results.flatMap(participant => participant.boletos);
+        res.status(200).json(deactivatedNumbers);
     });
 });
 
@@ -74,6 +55,7 @@ app.post('/submit', (req, res) => {
 
     // Validate input
     if (!nombre || !boletos || boletos < 1 || boletos > 250) {
+        console.error('Invalid input:', { nombre, boletos });
         return res.status(400).json({ error: 'Invalid input' });
     }
 
@@ -85,11 +67,34 @@ app.post('/submit', (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
 
-        // Respond with success
+        console.log('Participant added:', results);
         res.status(200).json({
             message: 'Participant added successfully',
             participant: { id: results.insertId, nombre, boletos },
         });
+    });
+});
+
+// Endpoint to update tickets and total for a participant
+app.post('/update-tickets', (req, res) => {
+    const { id, tickets, total } = req.body;
+
+    // Validate input
+    if (!id || !tickets || !total) {
+        console.error('Invalid input:', { id, tickets, total });
+        return res.status(400).json({ error: 'Invalid input' });
+    }
+
+    // Update the participant's tickets and total in the database
+    const query = 'UPDATE participants SET tickets = ?, total = ? WHERE id = ?';
+    connection.query(query, [tickets, total, id], (err, results) => {
+        if (err) {
+            console.error('Error updating tickets and total:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        console.log('Tickets and total updated:', results);
+        res.status(200).json({ message: 'Tickets and total updated successfully' });
     });
 });
 
