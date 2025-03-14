@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self'; 
+        script-src 'self'; 
+        style-src 'self'; 
+        img-src 'self' data:;
+        font-src 'self' https://fonts.googleapis.com;">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa con Ruleta</title>
+    <link rel="preload" href="index.css" as="style">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Formulario de ingreso (Popup) -->
+    <div id="form-popup" class="popup" role="dialog" aria-labelledby="form-title" aria-hidden="true">
+        <div class="popup-content">
+            <h2 id="form-title">Ingresar Datos</h2>
+            <form id="formularioParticipante" novalidate>
+                <input type="hidden" id="csrfToken" name="csrfToken" value="TOKEN">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]{2,50}$"
+                    autocomplete="off" inputmode="text" maxlength="50">
+                <label for="boletos">¿Por cuántos boletos deseas participar?:</label>
+                <input type="number" id="boletos" name="boletos" min="1" max="250" required inputmode="numeric">
+                <button type="submit">Confirmar</button>
+            </form>
+            <div id="error-message" class="error-message" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <main>
+        <section class="container">
+            <h1>🎡 Rifa con Ruleta</h1>
+
+            <!-- Información del participante -->
+            <section class="info-participante">
+                <h2 id="nombreParticipante">👤 Participante: -</h2>
+                <p id="intentosRestantes">🔄 Intentos: -</p>
+                <p id="boletosObtenidos">🎟️ Boletos Obtenidos: -</p>
+                <p id="totalBoletos">💰 Total: -</p>
+            </section>
+        </section>
+
+        <!-- Mensaje de número ganador -->
+        <div id="mensaje" aria-live="polite" aria-hidden="true"></div>
+
+        <section class="contenedor">
+            <h2>¿Qué boleto me tocará?</h2>
+            <div class="concursantes">
+                <div class="ruleta-container">
+                    <input type="button" value="¡Gira!" style="float:left;" id='spin'/>
+                    <canvas id="canvas" width="1000" height="1000"></canvas>
+                </div>            
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js" defer></script>
+</body>
+</html>

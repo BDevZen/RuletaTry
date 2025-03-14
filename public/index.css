@@ -1,0 +1,175 @@
+/* Variables de colores */
+:root {
+    --primary-color: #007BFF;
+    --primary-hover: #0056b3;
+    --success-color: #28a745;
+    --success-hover: #218838;
+    --text-color: #333;
+    --background-light: #f8f9fa;
+    --border-color: #ccc;
+}
+
+/* General */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: var(--background-light);
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+    text-align: center;
+}
+
+/* Contenedor principal */
+.container {
+    padding: 20px;
+}
+
+/* Información del participante */
+.info-participante {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    margin: 20px auto;
+    text-align: left;
+    width: 90%;
+    max-width: 400px;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.info-participante p {
+    margin: 8px 0;
+    font-size: 16px;
+}
+
+/* Popup de formulario */
+.popup {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 320px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Inputs y botones */
+input[type="text"],
+input[type="tel"],
+input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 6px rgba(0, 123, 255, 0.5);
+}
+
+/* Botón principal */
+button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s ease-in-out;
+}
+
+button:hover,
+button:focus {
+    background-color: var(--primary-hover);
+}
+
+/* Mensajes de error */
+.error-message {
+    color: red;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+/* Sección de concursantes */
+.contenedor {
+    margin-top: 20px;
+}
+
+.contenedor h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+/* Ruleta */
+.ruleta-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Input dentro de la ruleta-container */
+.ruleta-container input[type="button"] {
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    background: var(--success-color);
+    border: none;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: background 0.3s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.ruleta-container input[type="button"]:hover,
+.ruleta-container input[type="button"]:focus {
+    background: var(--success-hover);
+    transform: scale(1.05);
+}
+
+/* Canvas de la ruleta */
+canvas {
+    margin-top: 15px;
+    max-width: 100%;
+    border-radius: 50%;
+    border: 4px solid var(--primary-color);
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .info-participante,
+    .popup-content,
+    .ruleta-container {
+        width: 95%;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
