@@ -34,18 +34,44 @@ connection.connect((err) => {
     console.log('Connected to MySQL database');
 });
 
-// Endpoint to get deactivated numbers
+// Endpoint to fetch deactivated numbers
 app.get('/deactivated-numbers', (req, res) => {
-    const query = 'SELECT boletos FROM participants';
+    const query = 'SELECT deactivated_numbers FROM participants_wheel01 WHERE deactivated_numbers IS NOT NULL';
     connection.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching deactivated numbers:', err);
             return res.status(500).json({ error: 'Database error' });
         }
 
-        console.log('Deactivated numbers:', results);
-        const deactivatedNumbers = results.flatMap(participant => participant.boletos);
+        // Combine all deactivated numbers into a single array
+        const deactivatedNumbers = results
+            .flatMap(participant => participant.deactivated_numbers.split(','))
+            .map(Number);
+
+        console.log('Deactivated numbers:', deactivatedNumbers);
         res.status(200).json(deactivatedNumbers);
+    });
+});
+
+// Endpoint to update deactivated numbers
+app.post('/update-deactivated-numbers', (req, res) => {
+    const { id, deactivatedNumbers } = req.body;
+
+    // Validate input
+    if (!id || !deactivatedNumbers) {
+        return res.status(400).json({ error: 'Invalid input' });
+    }
+
+    // Update the participant's deactivated numbers in the database
+    const query = 'UPDATE participants_wheel01 SET deactivated_numbers = ? WHERE id = ?';
+    connection.query(query, [deactivatedNumbers.join(','), id], (err, results) => {
+        if (err) {
+            console.error('Error updating deactivated numbers:', err);
+            return res.status(500).json({ error: 'Database error' });
+        }
+
+        console.log('Deactivated numbers updated:', results);
+        res.status(200).json({ message: 'Deactivated numbers updated successfully' });
     });
 });
 
@@ -60,7 +86,7 @@ app.post('/submit', (req, res) => {
     }
 
     // Insert participant into the database
-    const query = 'INSERT INTO participants (nombre, boletos) VALUES (?, ?)';
+    const query = 'INSERT INTO participants_wheel01 (nombre, boletos) VALUES (?, ?)';
     connection.query(query, [nombre, boletos], (err, results) => {
         if (err) {
             console.error('Error inserting participant:', err);
@@ -86,7 +112,7 @@ app.post('/update-tickets', (req, res) => {
     }
 
     // Update the participant's tickets and total in the database
-    const query = 'UPDATE participants SET tickets = ?, total = ? WHERE id = ?';
+    const query = 'UPDATE participants_wheel01 SET tickets = ?, total = ? WHERE id = ?';
     connection.query(query, [tickets, total, id], (err, results) => {
         if (err) {
             console.error('Error updating tickets and total:', err);
@@ -100,7 +126,7 @@ app.post('/update-tickets', (req, res) => {
 
 // Endpoint to get all participants (optional)
 app.get('/participants', (req, res) => {
-    const query = 'SELECT * FROM participants';
+    const query = 'SELECT * FROM participants_wheel01';
     connection.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching participants:', err);

@@ -25,12 +25,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Call this function when the page loads or after a number is assigned
+    fetchDeactivatedNumbers();
+
     // Define updateRouletteWheel function
     function updateRouletteWheel() {
         const canvas = document.getElementById("canvas");
         if (canvas.getContext) {
             const ctx = canvas.getContext("2d");
-            const options = Array.from({ length: 250 }, (_, i) => i + 1);
+            const options = Array.from({ length: 199 }, (_, i) => i + 1);
 
             // Redraw the roulette wheel with deactivated numbers
             drawRouletteWheel(options, deactivatedNumbers);
@@ -43,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const nombre = document.getElementById('nombre').value.trim();
         const boletos = parseInt(document.getElementById('boletos').value, 10);
-
+    
         if (validateForm(nombre, boletos)) {
             try {
                 // Send data to the backend
@@ -54,28 +57,28 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     body: JSON.stringify({ nombre, boletos }),
                 });
-
+    
                 if (!response.ok) {
                     throw new Error('Error submitting form');
                 }
-
+    
                 const data = await response.json();
                 console.log('Participant added:', data.participant);
-
+    
                 // Store the participant's ID
                 participantId = data.participant.id;
-
+    
                 // Update participant information
                 document.getElementById('nombreParticipante').innerText = `👤 Participante: ${nombre}`;
                 document.getElementById('intentosRestantes').innerText = `🔄 Intentos: ${boletos}`;
                 intentosRestantes = boletos;
-
+    
                 // Hide the form popup after successful submission
                 formPopup.style.display = "none";
-
+    
                 // Enable the spin button
                 spinButton.disabled = false;
-
+    
                 // Fetch updated deactivated numbers
                 await fetchDeactivatedNumbers();
             } catch (error) {
@@ -86,9 +89,6 @@ document.addEventListener('DOMContentLoaded', function () {
             errorMessage.innerText = 'Por favor, complete todos los campos correctamente.';
         }
     });
-
-    // Fetch deactivated numbers when the page loads
-    fetchDeactivatedNumbers();
 
     // Validate form inputs
     function validateForm(nombre, boletos) {
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Roulette wheel logic
-    const options = Array.from({ length: 250 }, (_, i) => i + 1);
+    const options = Array.from({ length: 199 }, (_, i) => i + 1);
     let startAngle = 0;
     const arc = Math.PI / (options.length / 2);
     let spinTimeout = null;
@@ -113,78 +113,50 @@ document.addEventListener('DOMContentLoaded', function () {
     let ctx;
     let spinAngleStart = 0; // Declare and initialize spinAngleStart
 
-    // Color generation functions
-    function byte2Hex(n) {
-        var nybHexString = "0123456789ABCDEF";
-        return String(nybHexString.substr((n >> 4) & 0x0F, 1)) + nybHexString.substr(n & 0x0F, 1);
-    }
-
-    function RGB2Color(r, g, b) {
-        return '#' + byte2Hex(r) + byte2Hex(g) + byte2Hex(b);
-    }
-
-    function getColor(item, maxitem) {
-        var phase = 0;
-        var center = 128;
-        var width = 127;
-        var frequency = Math.PI * 2 / maxitem;
-
-        red = Math.sin(frequency * item + 2 + phase) * width + center;
-        green = Math.sin(frequency * item + 0 + phase) * width + center;
-        blue = Math.sin(frequency * item + 4 + phase) * width + center;
-
-        return RGB2Color(red, green, blue);
+    // Function to generate HSL colors
+    function getHSLColor(index, total) {
+        const hue = (index * 360) / total; // Distribute hues evenly
+        return `hsl(${hue}, 100%, 50%)`; // Full saturation and lightness
     }
 
     function drawRouletteWheel() {
-        var canvas = document.getElementById("canvas");
+        const canvas = document.getElementById("canvas");
         if (canvas.getContext) {
-            // Adjust canvas size based on container
-            const container = document.querySelector('.ruleta-container');
-            const containerWidth = container.clientWidth;
-            const canvasSize = Math.min(containerWidth, 500); // Limit to 500px as per CSS
-            canvas.width = canvasSize;
-            canvas.height = canvasSize;
-
-            var outsideRadius = canvas.width / 2 - 20;
-            var textRadius = outsideRadius - 50;
-            var insideRadius = 50;
-
+            const outsideRadius = canvas.width / 2 - 2 * 16; // Convert 2rem to pixels (1rem = 16px)
+            const textRadius = outsideRadius - 3 * 16; // Convert 3rem to pixels
+            const insideRadius = 1 * 16; // Convert 1rem to pixels
+    
             ctx = canvas.getContext("2d");
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 2;
-
-            // Use a larger font size for better readability
-            ctx.font = 'bold 14 sans-serif';
-
-            for (var i = 0; i < options.length; i++) {
-                var angle = startAngle + i * arc;
-                ctx.fillStyle = getColor(i, options.length);
-
+    
+            // Use HSL colors for the cells
+            for (let i = 0; i < options.length; i++) {
+                const angle = startAngle + i * arc;
+                const isDeactivated = deactivatedNumbers.includes(options[i]);
+    
+                // Use a dark shade for deactivated numbers
+                ctx.fillStyle = isDeactivated ? '#888' : getHSLColor(i, options.length);
+    
+                // Draw the cell (division)
                 ctx.beginPath();
                 ctx.arc(canvas.width / 2, canvas.height / 2, outsideRadius, angle, angle + arc, false);
                 ctx.arc(canvas.width / 2, canvas.height / 2, insideRadius, angle + arc, angle, true);
-                ctx.stroke();
+                ctx.closePath();
                 ctx.fill();
-
+    
+                // Draw the number
                 ctx.save();
-                ctx.shadowOffsetX = -1;
-                ctx.shadowOffsetY = -1;
-                ctx.shadowBlur = 0;
-                ctx.shadowColor = "rgb(220,220,220)";
-                ctx.fillStyle = "black";
-
-                // Adjust text positioning to ensure it's horizontal
-                const textAngle = angle + arc / 2;
-                const x = canvas.width / 2 + Math.cos(textAngle) * textRadius;
-                const y = canvas.height / 2 + Math.sin(textAngle) * textRadius;
-
-                ctx.translate(x, y);
-                ctx.rotate(textAngle + Math.PI / 2); // Rotate text to be horizontal
+                ctx.fillStyle = isDeactivated ? '#555' : 'black'; // Darker text for deactivated numbers
+                ctx.translate(
+                    canvas.width / 2 + Math.cos(angle + arc / 2) * textRadius,
+                    canvas.height / 2 + Math.sin(angle + arc / 2) * textRadius
+                );
+                ctx.rotate(angle + arc / 2); // Rotate text to align horizontally
                 const text = options[i].toString();
-                ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+                ctx.font = 'bold 14px Arial'; // Use rem for font size
+                ctx.textAlign = 'center'; // Center the text horizontally
+                ctx.textBaseline = 'middle'; // Center the text vertically
+                ctx.fillText(text, 0, 0); // Draw the text at the center
                 ctx.restore();
             }
 
@@ -222,8 +194,20 @@ document.addEventListener('DOMContentLoaded', function () {
             stopRotateWheel();
             return;
         }
-        var spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
-        startAngle += (spinAngle * Math.PI / 180);
+        const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+        startAngle += (spinAngle * Math.PI) / 180;
+
+        // Ensure the roulette doesn't land on a deactivated number
+        const degrees = (startAngle * 180) / Math.PI + 90;
+        const arcd = arc * 180 / Math.PI;
+        const index = Math.floor((360 - degrees % 360) / arcd);
+        const winner = options[index];
+
+        if (deactivatedNumbers.includes(winner)) {
+            // If the number is deactivated, skip it and continue spinning
+            spinTimeTotal += 100; // Add a small delay to avoid landing on the same number
+        }
+
         drawRouletteWheel();
         spinTimeout = setTimeout(rotateWheel, 30);
     }
@@ -234,17 +218,49 @@ document.addEventListener('DOMContentLoaded', function () {
         const arcd = arc * 180 / Math.PI;
         const index = Math.floor((360 - degrees % 360) / arcd);
         const winner = options[index];
-    
+
+        // Add the spun number to the list of deactivated numbers
+        if (!deactivatedNumbers.includes(winner)) {
+            deactivatedNumbers.push(winner);
+
+            // Send the updated deactivated numbers to the backend
+            try {
+                const response = await fetch('/update-deactivated-numbers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: participantId, // Ensure you have the participant's ID
+                        deactivatedNumbers: deactivatedNumbers,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error updating deactivated numbers');
+                }
+
+                const data = await response.json();
+                console.log('Deactivated numbers updated:', data);
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.innerText = 'Error updating deactivated numbers. Please try again.';
+            }
+        }
+
         // Add the spun number to the list
         spunNumbers.push(winner);
         totalSum += winner;
-    
+
         // Update the UI
         document.getElementById('boletosObtenidos').innerText = `🎟️ Boletos: ${spunNumbers.join(', ')}`;
         document.getElementById('totalBoletos').innerText = `💰 Total: ${totalSum}`;
         document.getElementById('mensaje').innerText = `¡Tu boleto es el número: ${winner}!`;
         document.getElementById('mensaje').setAttribute("aria-hidden", "false");
-    
+
+        // Redraw the roulette wheel to mark the deactivated number
+        drawRouletteWheel();
+
         // Send tickets and total to the backend
         try {
             const response = await fetch('/update-tickets', {
@@ -258,11 +274,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     total: totalSum,
                 }),
             });
-    
+
             if (!response.ok) {
                 throw new Error('Error updating tickets and total');
             }
-    
+
             const data = await response.json();
             console.log('Tickets and total updated:', data);
         } catch (error) {
@@ -272,9 +288,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function easeOut(t, b, c, d) {
-        var ts = (t /= d) * t;
-        var tc = ts * t;
-        return b + c * (tc + -3 * ts + 3 * t);
+        t /= d;
+        return c * (t * t * t + -3 * t * t + 3 * t) + b;
     }
 
     // Initial draw of the roulette wheel
