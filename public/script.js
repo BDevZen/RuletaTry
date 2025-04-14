@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const canvas = document.getElementById("canvas");
         if (canvas.getContext) {
             const ctx = canvas.getContext("2d");
-            const options = Array.from({ length: 199 }, (_, i) => i + 1);
+            const options = Array.from({ length: 250 }, (_, i) => i + 1);
 
             // Redraw the roulette wheel with deactivated numbers
             drawRouletteWheel(options, deactivatedNumbers);
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Roulette wheel logic
-    const options = Array.from({ length: 199 }, (_, i) => i + 1);
+    const options = Array.from({ length: 250 }, (_, i) => i + 1);
     let startAngle = 0;
     const arc = Math.PI / (options.length / 2);
     let spinTimeout = null;
