@@ -36,7 +36,7 @@ connection.connect((err) => {
 
 // Endpoint to fetch deactivated numbers
 app.get('/deactivated-numbers', (req, res) => {
-    const query = 'SELECT deactivated_numbers FROM participants_wheel01 WHERE deactivated_numbers IS NOT NULL';
+    const query = 'SELECT deactivated_numbers FROM participants WHERE deactivated_numbers IS NOT NULL';
     connection.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching deactivated numbers:', err);
@@ -63,7 +63,7 @@ app.post('/update-deactivated-numbers', (req, res) => {
     }
 
     // Update the participant's deactivated numbers in the database
-    const query = 'UPDATE participants_wheel01 SET deactivated_numbers = ? WHERE id = ?';
+    const query = 'UPDATE participants SET deactivated_numbers = ? WHERE id = ?';
     connection.query(query, [deactivatedNumbers.join(','), id], (err, results) => {
         if (err) {
             console.error('Error updating deactivated numbers:', err);
@@ -86,7 +86,7 @@ app.post('/submit', (req, res) => {
     }
 
     // Insert participant into the database
-    const query = 'INSERT INTO participants_wheel01 (nombre, boletos) VALUES (?, ?)';
+    const query = 'INSERT INTO participants (nombre, boletos) VALUES (?, ?)';
     connection.query(query, [nombre, boletos], (err, results) => {
         if (err) {
             console.error('Error inserting participant:', err);
@@ -112,7 +112,7 @@ app.post('/update-tickets', (req, res) => {
     }
 
     // Update the participant's tickets and total in the database
-    const query = 'UPDATE participants_wheel01 SET tickets = ?, total = ? WHERE id = ?';
+    const query = 'UPDATE participants SET tickets = ?, total = ? WHERE id = ?';
     connection.query(query, [tickets, total, id], (err, results) => {
         if (err) {
             console.error('Error updating tickets and total:', err);
@@ -126,7 +126,7 @@ app.post('/update-tickets', (req, res) => {
 
 // Endpoint to get all participants (optional)
 app.get('/participants', (req, res) => {
-    const query = 'SELECT * FROM participants_wheel01';
+    const query = 'SELECT * FROM participants';
     connection.query(query, (err, results) => {
         if (err) {
             console.error('Error fetching participants:', err);
