@@ -58,7 +58,7 @@ app.post('/update-deactivated-numbers', (req, res) => {
     const { id, deactivatedNumbers } = req.body;
 
     // Validate input
-    if (!id || !deactivatedNumbers) {
+    if (!id || !Array.isArray(deactivatedNumbers)) {
         return res.status(400).json({ error: 'Invalid input' });
     }
 

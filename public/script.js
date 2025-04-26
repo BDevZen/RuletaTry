@@ -222,6 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Add the spun number to the list of deactivated numbers
         if (!deactivatedNumbers.includes(winner)) {
             deactivatedNumbers.push(winner);
+            deactivatedNumbers = [...new Set(deactivatedNumbers)];
 
             // Send the updated deactivated numbers to the backend
             try {
