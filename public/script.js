@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     const spinButton = document.getElementById('spin');
     const formPopup = document.getElementById('form-popup');
     const participantForm = document.getElementById('formularioParticipante');
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let spunNumbers = []; // Track numbers spun on the roulette
     let totalSum = 0; // Track the total sum of spun numbers
     let deactivatedNumbers = []; // Track deactivated numbers
-    let participantId; // Store the participant's ID
+    let participantId = null; // Store the participant's ID
 
     // Fetch deactivated numbers from the backend
     async function fetchDeactivatedNumbers() {
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Call this function when the page loads or after a number is assigned
-    fetchDeactivatedNumbers();
+    await fetchDeactivatedNumbers();
 
     // Define updateRouletteWheel function
     function updateRouletteWheel() {
