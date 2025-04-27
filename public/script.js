@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 
     // Call this function when the page loads or after a number is assigned
-    await fetchDeactivatedNumbers();
+    fetchDeactivatedNumbers();
 
     // Define updateRouletteWheel function
     function updateRouletteWheel() {
