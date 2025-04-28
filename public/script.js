@@ -211,23 +211,17 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Check if the number is available (strict comparison)
+         // If the number is available, STOP IMMEDIATELY
         if (!deactivatedNumbers.includes(winner)) {
-            drawRouletteWheel();
-            spinTimeout = setTimeout(rotateWheel, 30);
-        } else {
-            // If landed on a deactivated number, add a small delay and retry
-            spinTimeTotal += 100;
-            if (spinTimeTotal < 10000) { // Max 10 seconds of retries
-                spinTimeout = setTimeout(rotateWheel, 30);
-            } else {
-                clearTimeout(spinTimeout);
-                alert('No se pudo encontrar un número disponible. Intenta de nuevo.');
-            }
+            spinTimeTotal = spinTime; // Force stop
         }
 
+        // Continue spinning until spinTimeTotal is reached
+        if (spinTime < spinTimeTotal) {
+            spinTimeout = setTimeout(rotateWheel, 30);
+        } 
+
         drawRouletteWheel();
-        spinTimeout = setTimeout(rotateWheel, 30);
     }
 
     async function stopRotateWheel() {

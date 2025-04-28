@@ -43,12 +43,12 @@ require('dotenv').config(); // Load environment variables
              return res.status(500).json({ error: 'Database error' });
          }
  
-        // Combine all deactivated numbers into a single array, remove duplicates
+        // Remove duplicates and invalid entries
         const deactivatedNumbers = results
-        .flatMap(p => p.deactivated_numbers.split(','))
-        .filter(num => num.trim() !== '') // Remove empty strings
-        .map(Number)
-        .filter((num, index, self) => self.indexOf(num) === index); // Remove duplicates
+            .flatMap(p => p.deactivated_numbers.split(','))
+            .map(Number)
+            .filter(num => !isNaN(num)) // Remove NaN entries
+            .filter((num, i, arr) => arr.indexOf(num) === i); // Deduplicate
  
          console.log('Deactivated numbers:', deactivatedNumbers);
          res.status(200).json(deactivatedNumbers);
