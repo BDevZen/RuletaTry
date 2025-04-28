@@ -210,12 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('No hay más números disponibles para girar.');
             return;
         }
-
-         // If the number is available, STOP IMMEDIATELY
-        if (!deactivatedNumbers.includes(winner)) {
-            spinTimeTotal = spinTime; // Force stop
-        }
-
+        
         // Continue spinning until spinTimeTotal is reached
         if (spinTime < spinTimeTotal) {
             spinTimeout = setTimeout(rotateWheel, 30);
