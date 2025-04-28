@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const degrees = (startAngle * 180) / Math.PI + 90;
         const arcd = arc * 180 / Math.PI;
         const index = Math.floor((360 - degrees % 360) / arcd);
-        const winner = options[index];
+        const winner = Number(options[index]); // Ensure winner is a number
 
         // Check if all numbers are deactivated
         const availableNumbers = options.filter(num => !deactivatedNumbers.includes(num));
@@ -211,10 +211,19 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // If landed on a deactivated number, skip it (but don't infinitely retry)
-        if (deactivatedNumbers.includes(winner)) {
-            // If the number is deactivated, skip it and continue spinning
-            spinTimeTotal += 100; // Add a small delay to avoid landing on the same number
+        // Check if the number is available (strict comparison)
+        if (!deactivatedNumbers.includes(winner)) {
+            drawRouletteWheel();
+            spinTimeout = setTimeout(rotateWheel, 30);
+        } else {
+            // If landed on a deactivated number, add a small delay and retry
+            spinTimeTotal += 100;
+            if (spinTimeTotal < 10000) { // Max 10 seconds of retries
+                spinTimeout = setTimeout(rotateWheel, 30);
+            } else {
+                clearTimeout(spinTimeout);
+                alert('No se pudo encontrar un número disponible. Intenta de nuevo.');
+            }
         }
 
         drawRouletteWheel();
@@ -231,7 +240,6 @@ document.addEventListener('DOMContentLoaded', function () {
         // Add the spun number to the list of deactivated numbers
         if (!deactivatedNumbers.includes(winner)) {
             deactivatedNumbers.push(winner);
-            deactivatedNumbers = [...new Set(deactivatedNumbers)];
 
             // Send the updated deactivated numbers to the backend
             try {

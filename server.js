@@ -45,9 +45,10 @@ require('dotenv').config(); // Load environment variables
  
         // Combine all deactivated numbers into a single array, remove duplicates
         const deactivatedNumbers = results
-            .flatMap(participant => participant.deactivated_numbers.split(','))
-            .map(Number)
-            .filter((num, index, self) => self.indexOf(num) === index); // Remove duplicates
+        .flatMap(p => p.deactivated_numbers.split(','))
+        .filter(num => num.trim() !== '') // Remove empty strings
+        .map(Number)
+        .filter((num, index, self) => self.indexOf(num) === index); // Remove duplicates
  
          console.log('Deactivated numbers:', deactivatedNumbers);
          res.status(200).json(deactivatedNumbers);
@@ -64,6 +65,7 @@ require('dotenv').config(); // Load environment variables
      }
  
      // Update the participant's deactivated numbers in the database
+     const uniqueNumbers = [...new Set(deactivatedNumbers)]; // Remove duplicates
      const query = 'UPDATE participants_wheel01 SET deactivated_numbers = ? WHERE id = ?';
      connection.query(query, [deactivatedNumbers.join(','), id], (err, results) => {
          if (err) {
