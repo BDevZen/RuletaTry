@@ -213,12 +213,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // If landed on a deactivated number, skip it (but don't infinitely retry)
         if (deactivatedNumbers.includes(winner)) {
-            spinTimeTotal += 100; // Small delay to avoid landing on the same number
-            if (spinTimeTotal > 5000) { // Max 5 seconds of additional spinning
-                clearTimeout(spinTimeout);
-                alert('No se pudo encontrar un número disponible después de varios intentos.');
-                return;
-            }
+            // If the number is deactivated, skip it and continue spinning
+            spinTimeTotal += 100; // Add a small delay to avoid landing on the same number
         }
 
         drawRouletteWheel();
