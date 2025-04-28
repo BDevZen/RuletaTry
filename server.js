@@ -43,10 +43,11 @@ require('dotenv').config(); // Load environment variables
              return res.status(500).json({ error: 'Database error' });
          }
  
-         // Combine all deactivated numbers into a single array
-         const deactivatedNumbers = results
-             .flatMap(participant => participant.deactivated_numbers.split(','))
-             .map(Number);
+        // Combine all deactivated numbers into a single array, remove duplicates
+        const deactivatedNumbers = results
+            .flatMap(participant => participant.deactivated_numbers.split(','))
+            .map(Number)
+            .filter((num, index, self) => self.indexOf(num) === index); // Remove duplicates
  
          console.log('Deactivated numbers:', deactivatedNumbers);
          res.status(200).json(deactivatedNumbers);
