@@ -33,10 +33,13 @@ require('dotenv').config(); // Load environment variables
      }
      console.log('Connected to MySQL database');
  });
+
+ // Validate deactivated numbers against custom list
+const validNumbers = [54, 65, 69, 71, 72, 73, 77, 78, 82, 84, 87, 89, 90, 94, 95, 97, 98, 100, 103, 104, 105, 112, 113, 115, 116, 120, 121, 122, 124, 125, 126, 127, 128, 130, 133, 134, 135, 136, 137, 138, 141, 143, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 158, 159, 162, 163, 164, 165, 166, 167, 170, 174, 175, 176, 178, 179, 181, 182, 183, 184, 185, 189, 191, 192, 197, 198, 201, 202, 204, 205, 208, 209, 212, 213, 214, 215, 217, 218, 220, 221, 222, 224, 225, 230, 233, 235, 236, 237, 238, 240, 242, 243, 245, 246, 247, 248, 249, 250];
  
  // Endpoint to fetch deactivated numbers
  app.get('/deactivated-numbers', (req, res) => {
-     const query = 'SELECT deactivated_numbers FROM participants_wheel01 WHERE deactivated_numbers IS NOT NULL';
+     const query = 'SELECT deactivated_numbers FROM participants_wheel WHERE deactivated_numbers IS NOT NULL';
      connection.query(query, (err, results) => {
          if (err) {
              console.error('Error fetching deactivated numbers:', err);
@@ -64,9 +67,11 @@ require('dotenv').config(); // Load environment variables
          return res.status(400).json({ error: 'Invalid input' });
      }
  
+     // Filter out invalid numbers
+     const filteredNumbers = deactivatedNumbers.filter(num => validNumbers.includes(num));
      // Update the participant's deactivated numbers in the database
-     const uniqueNumbers = [...new Set(deactivatedNumbers)]; // Remove duplicates
-     const query = 'UPDATE participants_wheel01 SET deactivated_numbers = ? WHERE id = ?';
+     const uniqueNumbers = [...new Set(filteredNumbers)]; // Remove duplicates
+     const query = 'UPDATE participants_wheel SET deactivated_numbers = ? WHERE id = ?';
      connection.query(query, [uniqueNumbers.join(','), id], (err, results) => {
          if (err) {
              console.error('Error updating deactivated numbers:', err);
@@ -89,7 +94,7 @@ require('dotenv').config(); // Load environment variables
      }
  
      // Insert participant into the database
-     const query = 'INSERT INTO participants_wheel01 (nombre, boletos) VALUES (?, ?)';
+     const query = 'INSERT INTO participants_wheel (nombre, boletos) VALUES (?, ?)';
      connection.query(query, [nombre, boletos], (err, results) => {
          if (err) {
              console.error('Error inserting participant:', err);
@@ -115,7 +120,7 @@ require('dotenv').config(); // Load environment variables
      }
  
      // Update the participant's tickets and total in the database
-     const query = 'UPDATE participants_wheel01 SET tickets = ?, total = ? WHERE id = ?';
+     const query = 'UPDATE participants_wheel SET tickets = ?, total = ? WHERE id = ?';
      connection.query(query, [tickets, total, id], (err, results) => {
          if (err) {
              console.error('Error updating tickets and total:', err);
@@ -129,7 +134,7 @@ require('dotenv').config(); // Load environment variables
  
  // Endpoint to get all participants (optional)
  app.get('/participants', (req, res) => {
-     const query = 'SELECT * FROM participants_wheel01';
+     const query = 'SELECT * FROM participants_wheel';
      connection.query(query, (err, results) => {
          if (err) {
              console.error('Error fetching participants:', err);
