@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     const spinButton = document.getElementById('spin');
+    const resetButton = document.getElementById('reset'); // Add this line
     const formPopup = document.getElementById('form-popup');
     const participantForm = document.getElementById('formularioParticipante');
     const errorMessage = document.getElementById('error-message');
