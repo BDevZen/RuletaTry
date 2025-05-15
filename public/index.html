@@ -24,12 +24,17 @@
                 <input type="hidden" id="csrfToken" name="csrfToken" value="TOKEN">
                 <div class="form-group">
                     <label for="nombre">Nombre:</label>
-                    <input type="text" id="nombre" name="nombre" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]{2,50}$" autocomplete="off" inputmode="text" maxlength="50" aria-describedby="nombre-help">
+                    <input type="text" id="nombre" name="nombre" required 
+                           pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]{2,50}$"
+                           autocomplete="off" inputmode="text" maxlength="50"
+                           aria-describedby="nombre-help">
                     <small id="nombre-help">Mínimo 2 caracteres, solo letras</small>
                 </div>
                 <div class="form-group">
                     <label for="boletos">¿Por cuántos boletos deseas participar?</label>
-                    <input type="number" id="boletos" name="boletos" min="1" max="250" required inputmode="numeric" aria-describedby="boletos-help">
+                    <input type="number" id="boletos" name="boletos" 
+                           min="1" max="250" required inputmode="numeric"
+                           aria-describedby="boletos-help">
                     <small id="boletos-help">Entre 1 y 250 boletos</small>
                 </div>
                 <button type="submit" class="btn-primary">Confirmar</button>
@@ -41,14 +46,14 @@
     <main>
         <section class="container">
             <h1>🎡 Rifa con Ruleta</h1>
-
+            
             <!-- Control buttons -->
             <div class="controls">
                 <button id="reset" class="btn-reset" aria-label="Reiniciar aplicación">🔄 Reiniciar</button>
             </div>
 
             <!-- Información del participante -->
-            <section class="info-participante">
+            <section class="info-participante" aria-live="polite">
                 <h2 id="nombreParticipante">👤 Participante: -</h2>
                 <p id="intentosRestantes">🔄 Intentos: -</p>
                 <p id="boletosObtenidos">🎟️ Boletos Obtenidos: -</p>
@@ -64,15 +69,18 @@
             <div class="concursantes">
                 <div class="ruleta-container">
                     <div class="spin-controls">
-                        <button type="button" id="spin" class="btn-spin" disabled>¡Gira la Ruleta!</button>
+                        <button type="button" id="spin" class="btn-spin" disabled>
+                            ¡Gira la Ruleta!
+                        </button>
                         <div class="spin-status" aria-live="polite"></div>
                     </div>
-                    <canvas id="canvas" width="1000" height="1000" aria-label="Ruleta de rifa" role="img"></canvas>
+                    <canvas id="canvas" width="1000" height="1000" 
+                            aria-label="Ruleta de rifa con números del 65 al 250"
+                            role="img"></canvas>
                 </div>            
             </div>
         </section>
     </main>
-
 
     <script src="script.js" defer></script>
 </body>
