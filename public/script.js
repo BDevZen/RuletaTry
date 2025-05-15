@@ -60,16 +60,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Define updateRouletteWheel function
-    // function updateRouletteWheel() {
-    //     const canvas = document.getElementById("canvas");
-    //     if (canvas.getContext) {
-    //         const ctx = canvas.getContext("2d");
-    //         const options = Array.from({ length: 250 }, (_, i) => i + 1);
+    function updateRouletteWheel() {
+        const canvas = document.getElementById("canvas");
+        if (canvas.getContext) {
+            const ctx = canvas.getContext("2d");
+            const options = Array.from({ length: 250 }, (_, i) => i + 1);
 
-    //         // Redraw the roulette wheel with deactivated numbers
-    //         drawRouletteWheel(options, deactivatedNumbers);
-    //     }
-    // }
+            // Redraw the roulette wheel with deactivated numbers
+            drawRouletteWheel(options, deactivatedNumbers);
+        }
+    }
 
     // Handle form submission
     participantForm.addEventListener('submit', async function (event) {
@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
         updateUI();
     });
 
-    function rotateWheel() {
+    function rotateWheel(spinAngleStart) {
         spinTime += 30;
         if (spinTime >= spinTimeTotal) {
             stopRotateWheel();
@@ -230,12 +230,12 @@ document.addEventListener('DOMContentLoaded', function () {
         drawRouletteWheel();
 
         // Check if all numbers are deactivated
-        // const availableNumbers = options.filter(num => !deactivatedNumbers.includes(num));
-        // if (availableNumbers.length === 0) {
-        //     clearTimeout(spinTimeout);
-        //     alert('No hay más números disponibles para girar.');
-        //     return;
-        // }
+        const availableNumbers = options.filter(num => !deactivatedNumbers.includes(num));
+        if (availableNumbers.length === 0) {
+            clearTimeout(spinTimeout);
+            alert('No hay más números disponibles para girar.');
+            return;
+        }
         
         // Continue spinning until spinTimeTotal is reached
         if (spinTime < spinTimeTotal) {
