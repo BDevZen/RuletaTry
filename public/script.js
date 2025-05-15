@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', function () {
     let deactivatedNumbers = []; // Track deactivated numbers
     let participantId; // Store the participant's ID
 
+    // Initialize UI
+    updateUI();
+
     // Fetch deactivated numbers from the backend
     async function fetchDeactivatedNumbers() {
         try {
@@ -22,23 +25,50 @@ document.addEventListener('DOMContentLoaded', function () {
             updateRouletteWheel(); // Update the roulette wheel
         } catch (error) {
             console.error('Error:', error);
+            showError('Error loading numbers. Please refresh the page.');
         }
     }
 
-    // Call this function when the page loads or after a number is assigned
-    fetchDeactivatedNumbers();
+    // Update all UI elements
+    function updateUI() {
+        document.getElementById('nombreParticipante').innerText = `👤 Participante: ${participantId ? 'Active' : 'None'}`;
+        document.getElementById('intentosRestantes').innerText = `🔄 Intentos: ${intentosRestantes}`;
+        document.getElementById('boletosObtenidos').innerText = `🎟️ Boletos: ${spunNumbers.join(', ') || 'None'}`;
+        document.getElementById('totalBoletos').innerText = `💰 Total: ${totalSum}`;
+        document.getElementById('mensaje').innerText = spunNumbers.length ? `Last number: ${spunNumbers[spunNumbers.length-1]}` : '';
+        spinButton.disabled = intentosRestantes <= 0 || !participantId;
+    }
+
+    // Show error message
+    function showError(message) {
+        errorMessage.innerText = message;
+        errorMessage.style.display = 'block';
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 5000);
+    }
+
+    // Reset the application state
+    function resetApp() {
+        spunNumbers = [];
+        totalSum = 0;
+        participantId = null;
+        intentosRestantes = 0;
+        formPopup.style.display = "block";
+        updateUI();
+    }
 
     // Define updateRouletteWheel function
-    function updateRouletteWheel() {
-        const canvas = document.getElementById("canvas");
-        if (canvas.getContext) {
-            const ctx = canvas.getContext("2d");
-            const options = Array.from({ length: 250 }, (_, i) => i + 1);
+    // function updateRouletteWheel() {
+    //     const canvas = document.getElementById("canvas");
+    //     if (canvas.getContext) {
+    //         const ctx = canvas.getContext("2d");
+    //         const options = Array.from({ length: 250 }, (_, i) => i + 1);
 
-            // Redraw the roulette wheel with deactivated numbers
-            drawRouletteWheel(options, deactivatedNumbers);
-        }
-    }
+    //         // Redraw the roulette wheel with deactivated numbers
+    //         drawRouletteWheel(options, deactivatedNumbers);
+    //     }
+    // }
 
     // Handle form submission
     participantForm.addEventListener('submit', async function (event) {
@@ -47,53 +77,52 @@ document.addEventListener('DOMContentLoaded', function () {
         const nombre = document.getElementById('nombre').value.trim();
         const boletos = parseInt(document.getElementById('boletos').value, 10);
     
-        if (validateForm(nombre, boletos)) {
-            try {
-                // Send data to the backend
-                const response = await fetch('/submit', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ nombre, boletos }),
-                });
-    
-                if (!response.ok) {
-                    throw new Error('Error submitting form');
-                }
-    
-                const data = await response.json();
-                console.log('Participant added:', data.participant);
-    
-                // Store the participant's ID
-                participantId = data.participant.id;
-    
-                // Update participant information
-                document.getElementById('nombreParticipante').innerText = `👤 Participante: ${nombre}`;
-                document.getElementById('intentosRestantes').innerText = `🔄 Intentos: ${boletos}`;
-                intentosRestantes = boletos;
-    
-                // Hide the form popup after successful submission
-                formPopup.style.display = "none";
-    
-                // Enable the spin button
-                spinButton.disabled = false;
-    
-                // Fetch updated deactivated numbers
-                await fetchDeactivatedNumbers();
-            } catch (error) {
-                console.error('Error:', error);
-                errorMessage.innerText = 'Error submitting form. Please try again.';
+        if (!validateForm(nombre, boletos)) {
+            showError('Por favor, complete todos los campos correctamente.');
+            return;
+        }
+
+        try {
+            // Send data to the backend
+            const response = await fetch('/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ nombre, boletos }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Error submitting form');
             }
-        } else {
-            errorMessage.innerText = 'Por favor, complete todos los campos correctamente.';
+
+            const data = await response.json();
+            console.log('Participant added:', data.participant);
+
+            // Store the participant's ID
+            participantId = data.participant.id;
+
+            // Update participant information
+            intentosRestantes = boletos;
+
+            // Hide the form popup after successful submission
+            formPopup.style.display = "none";
+
+            // Enable the spin button
+            updateUI();
+
+            // Fetch updated deactivated numbers
+            await fetchDeactivatedNumbers();
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Error submitting form. Please try again.');
         }
     });
 
     // Validate form inputs
     function validateForm(nombre, boletos) {
         const nombrePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]{2,50}$/;
-        return nombrePattern.test(nombre) && boletos > 0;
+        return nombrePattern.test(nombre) && boletos > 0 && boletos <= 250;
     }
 
     // Sanitize input to prevent XSS
@@ -121,71 +150,72 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function drawRouletteWheel() {
         const canvas = document.getElementById("canvas");
-        if (canvas.getContext) {
-            const outsideRadius = canvas.width / 2 - 2 * 16; // Convert 2rem to pixels (1rem = 16px)
-            const textRadius = outsideRadius - 3 * 16; // Convert 3rem to pixels
-            const insideRadius = 1 * 16; // Convert 1rem to pixels
-    
-            ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-            // Use HSL colors for the cells
-            for (let i = 0; i < options.length; i++) {
-                const angle = startAngle + i * arc;
-                const isDeactivated = deactivatedNumbers.includes(options[i]);
-    
-                // Use a dark shade for deactivated numbers
-                ctx.fillStyle = isDeactivated ? '#888' : getHSLColor(i, options.length);
-    
-                // Draw the cell (division)
-                ctx.beginPath();
-                ctx.arc(canvas.width / 2, canvas.height / 2, outsideRadius, angle, angle + arc, false);
-                ctx.arc(canvas.width / 2, canvas.height / 2, insideRadius, angle + arc, angle, true);
-                ctx.closePath();
-                ctx.fill();
-    
-                // Draw the number
-                ctx.save();
-                ctx.fillStyle = isDeactivated ? '#555' : 'black'; // Darker text for deactivated numbers
-                ctx.translate(
-                    canvas.width / 2 + Math.cos(angle + arc / 2) * textRadius,
-                    canvas.height / 2 + Math.sin(angle + arc / 2) * textRadius
-                );
-                ctx.rotate(angle + arc / 2); // Rotate text to align horizontally
-                const text = options[i].toString();
-                ctx.font = 'bold 14px Arial'; // Use rem for font size
-                ctx.textAlign = 'center'; // Center the text horizontally
-                ctx.textBaseline = 'middle'; // Center the text vertically
-                ctx.fillText(text, 0, 0); // Draw the text at the center
-                ctx.restore();
-            }
+        if (!canvas.getContext) return;
 
-            // Draw the arrow
-            ctx.fillStyle = "black";
+        const outsideRadius = canvas.width / 2 - 2 * 16; // Convert 2rem to pixels (1rem = 16px)
+        const textRadius = outsideRadius - 3 * 16; // Convert 3rem to pixels
+        const insideRadius = 1 * 16; // Convert 1rem to pixels
+
+        ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Use HSL colors for the cells
+        for (let i = 0; i < options.length; i++) {
+            const angle = startAngle + i * arc;
+            const isDeactivated = deactivatedNumbers.includes(options[i]);
+
+            // Use a dark shade for deactivated numbers
+            ctx.fillStyle = isDeactivated ? '#888' : getHSLColor(i, options.length);
+
+            // Draw the cell (division)
             ctx.beginPath();
-            ctx.moveTo(canvas.width / 2 - 4, canvas.height / 2 - (outsideRadius + 5));
-            ctx.lineTo(canvas.width / 2 + 4, canvas.height / 2 - (outsideRadius + 5));
-            ctx.lineTo(canvas.width / 2 + 4, canvas.height / 2 - (outsideRadius - 5));
-            ctx.lineTo(canvas.width / 2 + 9, canvas.height / 2 - (outsideRadius - 5));
-            ctx.lineTo(canvas.width / 2 + 0, canvas.height / 2 - (outsideRadius - 13));
-            ctx.lineTo(canvas.width / 2 - 9, canvas.height / 2 - (outsideRadius - 5));
-            ctx.lineTo(canvas.width / 2 - 4, canvas.height / 2 - (outsideRadius - 5));
-            ctx.lineTo(canvas.width / 2 - 4, canvas.height / 2 - (outsideRadius + 5));
+            ctx.arc(canvas.width / 2, canvas.height / 2, outsideRadius, angle, angle + arc, false);
+            ctx.arc(canvas.width / 2, canvas.height / 2, insideRadius, angle + arc, angle, true);
+            ctx.closePath();
             ctx.fill();
+
+            // Draw the number
+            ctx.save();
+            ctx.fillStyle = isDeactivated ? '#555' : 'black'; // Darker text for deactivated numbers
+            ctx.translate(
+                canvas.width / 2 + Math.cos(angle + arc / 2) * textRadius,
+                canvas.height / 2 + Math.sin(angle + arc / 2) * textRadius
+            );
+            ctx.rotate(angle + arc / 2); // Rotate text to align horizontally
+            const text = options[i].toString();
+            ctx.font = 'bold 14px Arial'; // Use rem for font size
+            ctx.textAlign = 'center'; // Center the text horizontally
+            ctx.textBaseline = 'middle'; // Center the text vertically
+            ctx.fillText(text, 0, 0); // Draw the text at the center
+            ctx.restore();
         }
+
+        // Draw the arrow
+        ctx.fillStyle = "black";
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2 - 4, canvas.height / 2 - (outsideRadius + 5));
+        ctx.lineTo(canvas.width / 2 + 4, canvas.height / 2 - (outsideRadius + 5));
+        ctx.lineTo(canvas.width / 2 + 4, canvas.height / 2 - (outsideRadius - 5));
+        ctx.lineTo(canvas.width / 2 + 9, canvas.height / 2 - (outsideRadius - 5));
+        ctx.lineTo(canvas.width / 2 + 0, canvas.height / 2 - (outsideRadius - 13));
+        ctx.lineTo(canvas.width / 2 - 9, canvas.height / 2 - (outsideRadius - 5));
+        ctx.lineTo(canvas.width / 2 - 4, canvas.height / 2 - (outsideRadius - 5));
+        ctx.lineTo(canvas.width / 2 - 4, canvas.height / 2 - (outsideRadius + 5));
+        ctx.fill();
     }
 
     spinButton.addEventListener('click', function () {
-        if (intentosRestantes > 0) {
-            spinAngleStart = Math.random() * 10 + 10; // Initialize spinAngleStart here
-            spinTime = 0;
-            spinTimeTotal = Math.random() * 3 + 4 * 1000;
-            rotateWheel();
-            intentosRestantes--;
-            document.getElementById('intentosRestantes').innerText = `🔄 Intentos: ${intentosRestantes}`;
-        } else {
-            alert('No tienes más intentos.');
+        if (intentosRestantes <= 0) {
+            showError('No tienes más intentos.');
+            return;
         }
+    
+        const spinAngleStart = Math.random() * 10 + 10;
+        spinTime = 0;
+        spinTimeTotal = Math.random() * 3 + 4 * 1000;
+        rotateWheel(spinAngleStart);
+        intentosRestantes--;
+        updateUI();
     });
 
     function rotateWheel() {
@@ -196,27 +226,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
         startAngle += (spinAngle * Math.PI) / 180;
-
-        // Ensure the roulette doesn't land on a deactivated number
-        const degrees = (startAngle * 180) / Math.PI + 90;
-        const arcd = arc * 180 / Math.PI;
-        const index = Math.floor((360 - degrees % 360) / arcd);
-        const winner = Number(options[index]); // Ensure winner is a number
+        drawRouletteWheel();
 
         // Check if all numbers are deactivated
-        const availableNumbers = options.filter(num => !deactivatedNumbers.includes(num));
-        if (availableNumbers.length === 0) {
-            clearTimeout(spinTimeout);
-            alert('No hay más números disponibles para girar.');
-            return;
-        }
+        // const availableNumbers = options.filter(num => !deactivatedNumbers.includes(num));
+        // if (availableNumbers.length === 0) {
+        //     clearTimeout(spinTimeout);
+        //     alert('No hay más números disponibles para girar.');
+        //     return;
+        // }
         
         // Continue spinning until spinTimeTotal is reached
         if (spinTime < spinTimeTotal) {
             spinTimeout = setTimeout(rotateWheel, 30);
         } 
-
-        drawRouletteWheel();
     }
 
     async function stopRotateWheel() {
@@ -226,33 +249,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const index = Math.floor((360 - degrees % 360) / arcd);
         const winner = options[index];
 
-        // Add the spun number to the list of deactivated numbers
-        if (!deactivatedNumbers.includes(winner)) {
-            deactivatedNumbers.push(winner);
-
-            // Send the updated deactivated numbers to the backend
-            try {
-                const response = await fetch('/update-deactivated-numbers', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        id: participantId, // Ensure you have the participant's ID
-                        deactivatedNumbers: deactivatedNumbers,
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Error updating deactivated numbers');
-                }
-
-                const data = await response.json();
-                console.log('Deactivated numbers updated:', data);
-            } catch (error) {
-                console.error('Error:', error);
-                errorMessage.innerText = 'Error updating deactivated numbers. Please try again.';
-            }
+        // Check if number is already spun
+        if (spunNumbers.includes(winner)) {
+            showError('Este número ya fue seleccionado. Girando nuevamente...');
+            spinButton.click();
+            return;
         }
 
         // Add the spun number to the list
@@ -260,39 +261,51 @@ document.addEventListener('DOMContentLoaded', function () {
         totalSum += winner;
 
         // Update the UI
-        document.getElementById('boletosObtenidos').innerText = `🎟️ Boletos: ${spunNumbers.join(', ')}`;
-        document.getElementById('totalBoletos').innerText = `💰 Total: ${totalSum}`;
-        document.getElementById('mensaje').innerText = `¡Tu boleto es el número: ${winner}!`;
-        document.getElementById('mensaje').setAttribute("aria-hidden", "false");
+        updateUI();
 
         // Redraw the roulette wheel to mark the deactivated number
         drawRouletteWheel();
 
-        // Send tickets and total to the backend
+
+        // Send the updated deactivated numbers to the backend
         try {
-            const response = await fetch('/update-tickets', {
+            const deactivatedResponse = await fetch('/update-deactivated-numbers', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     id: participantId, // Ensure you have the participant's ID
-                    tickets: spunNumbers.join(','), // Convert array to comma-separated string
-                    total: totalSum,
+                    deactivatedNumbers: [...deactivatedNumbers, winner]
                 }),
             });
 
-            if (!response.ok) {
-                throw new Error('Error updating tickets and total');
+            // Update tickets and total
+            const ticketsResponse = await fetch('/update-tickets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: participantId,
+                    tickets: spunNumbers.join(','),
+                    total: totalSum
+                }),
+            });
+
+            if (!deactivatedResponse.ok || !ticketsResponse.ok) {
+                throw new Error('Error updating data');
             }
 
-            const data = await response.json();
-            console.log('Tickets and total updated:', data);
+            // Update UI with success
+            document.getElementById('mensaje').innerText = `¡Tu boleto es el número: ${winner}!`;
+            await fetchDeactivatedNumbers();
         } catch (error) {
             console.error('Error:', error);
-            errorMessage.innerText = 'Error updating tickets and total. Please try again.';
+            showError('Error updating data. Please try again.');
         }
     }
+
+    // Reset button handler
+    resetButton.addEventListener('click', resetApp);
 
     function easeOut(t, b, c, d) {
         t /= d;
@@ -300,6 +313,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Initial draw of the roulette wheel
+    fetchDeactivatedNumbers();
     drawRouletteWheel();
 
     // Adjust canvas size on window resize

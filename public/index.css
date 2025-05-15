@@ -4,9 +4,13 @@
     --primary-hover: #0056b3;
     --success-color: #28a745;
     --success-hover: #218838;
+    --danger-color: #f44336;
+    --danger-hover: #d32f2f;
     --text-color: #333;
     --background-light: #f8f9fa;
     --border-color: #ccc;
+    --winner-bg: #e8f5e9;
+    --disabled-color: #cccccc;
 }
 
 /* General */
@@ -17,17 +21,28 @@ body {
     padding: 0;
     color: var(--text-color);
     text-align: center;
+    line-height: 1.6;
 }
 
 /* Contenedor principal */
 .container {
     padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Controls section */
+.controls {
+    margin: 1.5rem 0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
 }
 
 /* Información del participante */
 .info-participante {
     background: #fff;
-    padding: 15px;
+    padding: 1.5rem;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: inline-block;
@@ -38,9 +53,13 @@ body {
     transition: box-shadow 0.3s ease-in-out;
 }
 
+.info-participante:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
 .info-participante p {
-    margin: 8px 0;
-    font-size: 16px;
+    margin: 0.75rem 0;
+    font-size: 1rem;
 }
 
 /* Popup de formulario */
@@ -53,123 +72,230 @@ body {
     background-color: rgba(0, 0, 0, 0.7);
     z-index: 1000;
     backdrop-filter: blur(5px);
+    transition: opacity 0.3s ease;
 }
 
 .popup-content {
     background-color: white;
-    padding: 20px;
+    padding: 2rem;
     border-radius: 12px;
     width: 90%;
-    max-width: 320px;
+    max-width: 350px;
     text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Inputs y botones */
+.popup-content h2 {
+    margin-top: 0;
+    color: var(--primary-color);
+}
+
+/* Form groups */
+.form-group {
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-group small {
+    display: block;
+    color: #666;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+/* Inputs */
 input[type="text"],
 input[type="tel"],
 input[type="number"] {
     width: 100%;
-    padding: 12px;
-    margin: 10px 0;
+    padding: 0.75rem;
+    margin: 0.25rem 0;
     border: 1px solid var(--border-color);
     border-radius: 6px;
-    font-size: 16px;
+    font-size: 1rem;
     outline: none;
-    transition: border-color 0.3s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: all 0.3s ease;
 }
 
 input:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 6px rgba(0, 123, 255, 0.5);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
 }
 
-/* Botón principal */
+/* Buttons */
 button {
-    background-color: var(--primary-color);
-    color: white;
     border: none;
-    padding: 12px;
-    font-size: 16px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
     border-radius: 6px;
     cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
     width: 100%;
-    transition: background 0.3s ease-in-out;
 }
 
-button:hover,
-button:focus {
+.btn-primary:hover,
+.btn-primary:focus {
     background-color: var(--primary-hover);
+    transform: translateY(-1px);
 }
 
-/* Mensajes de error */
+.btn-spin {
+    background-color: var(--success-color);
+    color: white;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.btn-spin:hover,
+.btn-spin:focus {
+    background-color: var(--success-hover);
+    transform: scale(1.05);
+}
+
+.btn-spin:disabled {
+    background-color: var(--disabled-color);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-reset {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.btn-reset:hover,
+.btn-reset:focus {
+    background-color: var(--danger-hover);
+    transform: translateY(-1px);
+}
+
+/* Messages */
 .error-message {
-    color: red;
-    margin-top: 10px;
-    font-size: 14px;
+    color: var(--danger-color);
+    margin: 1rem 0 0;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    background-color: rgba(244, 67, 54, 0.1);
+    border-radius: 4px;
+    display: none;
+}
+
+.winner-message {
+    text-align: center;
+    font-size: 1.2rem;
+    margin: 1.5rem auto;
+    padding: 1rem;
+    background-color: var(--winner-bg);
+    border-radius: 8px;
+    max-width: 500px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Sección de concursantes */
 .contenedor {
-    margin-top: 20px;
+    margin-top: 2rem;
 }
 
 .contenedor h2 {
-    font-size: 22px;
-    margin-bottom: 15px;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
 }
 
-/* Ruleta */
+/* Ruleta container */
 .ruleta-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 1rem;
     background: #fff;
-    padding: 20px;
+    padding: 2rem;
     border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
     margin: 0 auto;
 }
 
-/* Input dentro de la ruleta-container */
-.ruleta-container input[type="button"] {
-    padding: 12px 24px;
-    font-size: 16px;
-    cursor: pointer;
-    background: var(--success-color);
-    border: none;
-    color: white;
-    font-weight: bold;
-    border-radius: 8px;
-    transition: background 0.3s ease-in-out, transform 0.1s ease-in-out;
-}
-
-.ruleta-container input[type="button"]:hover,
-.ruleta-container input[type="button"]:focus {
-    background: var(--success-hover);
-    transform: scale(1.05);
+.spin-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
 }
 
 /* Canvas de la ruleta */
 canvas {
-    margin-top: 15px;
-    max-width: 100%;
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 1/1;
     border-radius: 50%;
-    border: 4px solid var(--primary-color);
+    border: 6px solid var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+canvas:hover {
+    transform: scale(1.01);
 }
 
 /* Responsivo */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
     .info-participante,
     .popup-content,
     .ruleta-container {
         width: 95%;
+        padding: 1.25rem;
     }
 
-    button {
-        font-size: 14px;
-        padding: 10px;
+    .contenedor h2 {
+        font-size: 1.3rem;
+    }
+
+    .winner-message {
+        font-size: 1.1rem;
+        margin: 1rem auto;
+        padding: 0.75rem;
+    }
+
+    .btn-spin {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .controls {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .popup-content {
+        padding: 1.5rem;
+    }
+
+    .ruleta-container {
+        padding: 1rem;
+    }
+
+    canvas {
+        border-width: 4px;
     }
 }

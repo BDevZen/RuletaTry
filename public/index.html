@@ -17,25 +17,35 @@
 </head>
 <body>
     <!-- Formulario de ingreso (Popup) -->
-    <div id="form-popup" class="popup" role="dialog" aria-labelledby="form-title" aria-hidden="true">
+    <div id="form-popup" class="popup" role="dialog" aria-labelledby="form-title" aria-hidden="false">
         <div class="popup-content">
             <h2 id="form-title">Ingresar Datos</h2>
             <form id="formularioParticipante" novalidate>
                 <input type="hidden" id="csrfToken" name="csrfToken" value="TOKEN">
-                <label for="nombre">Nombre:</label>
-                <input type="text" id="nombre" name="nombre" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]{2,50}$"
-                    autocomplete="off" inputmode="text" maxlength="50">
-                <label for="boletos">¿Por cuántos boletos deseas participar?:</label>
-                <input type="number" id="boletos" name="boletos" min="1" max="250" required inputmode="numeric">
-                <button type="submit">Confirmar</button>
+                <div class="form-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]{2,50}$" autocomplete="off" inputmode="text" maxlength="50" aria-describedby="nombre-help">
+                    <small id="nombre-help">Mínimo 2 caracteres, solo letras</small>
+                </div>
+                <div class="form-group">
+                    <label for="boletos">¿Por cuántos boletos deseas participar?</label>
+                    <input type="number" id="boletos" name="boletos" min="1" max="250" required inputmode="numeric" aria-describedby="boletos-help">
+                    <small id="boletos-help">Entre 1 y 250 boletos</small>
+                </div>
+                <button type="submit" class="btn-primary">Confirmar</button>
             </form>
-            <div id="error-message" class="error-message" aria-live="polite"></div>
+            <div id="error-message" class="error-message" aria-live="polite" role="alert"></div>
         </div>
     </div>
 
     <main>
         <section class="container">
             <h1>🎡 Rifa con Ruleta</h1>
+
+            <!-- Control buttons -->
+            <div class="controls">
+                <button id="reset" class="btn-reset" aria-label="Reiniciar aplicación">🔄 Reiniciar</button>
+            </div>
 
             <!-- Información del participante -->
             <section class="info-participante">
@@ -47,18 +57,22 @@
         </section>
 
         <!-- Mensaje de número ganador -->
-        <div id="mensaje" aria-live="polite" aria-hidden="true"></div>
+        <div id="mensaje" class="winner-message" aria-live="assertive" aria-hidden="true" role="status"></div>
 
         <section class="contenedor">
             <h2>¿Qué boleto me tocará?</h2>
             <div class="concursantes">
                 <div class="ruleta-container">
-                    <input type="button" value="¡Gira!" style="float:left;" id='spin'/>
-                    <canvas id="canvas" width="1000" height="1000"></canvas>
+                    <div class="spin-controls">
+                        <button type="button" id="spin" class="btn-spin" disabled>¡Gira la Ruleta!</button>
+                        <div class="spin-status" aria-live="polite"></div>
+                    </div>
+                    <canvas id="canvas" width="1000" height="1000" aria-label="Ruleta de rifa" role="img"></canvas>
                 </div>            
             </div>
         </section>
     </main>
+
 
     <script src="script.js" defer></script>
 </body>
