@@ -35,7 +35,7 @@ require('dotenv').config(); // Load environment variables
  });
 
  // Validate deactivated numbers against custom list
-const validNumbers = [120, 122, 126, 130, 146, 165, 166, 167, 183, 202, 209, 221, 230, 233, 236, 237, 238, 240, 243, 247];
+const validNumbers = [122, 126, 146, 165, 166, 167, 202, 209, 221, 230, 233, 236, 237, 238, 240, 243, 247];
  
  // Endpoint to fetch deactivated numbers
  app.get('/deactivated-numbers', (req, res) => {
