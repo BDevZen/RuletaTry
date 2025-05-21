@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Roulette wheel logic
-    const options = [209, 221, 233, 243];
+    const options = [209, 243];
     let startAngle = 0;
     const arc = Math.PI / (options.length / 2);
     let spinTimeout = null;
